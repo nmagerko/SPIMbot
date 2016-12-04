@@ -71,7 +71,7 @@ main:
 
 	la 		$a0, 0
 	la 		$a1, 3
-	la 		$a2, 5
+	la 		$a2, 9
 	jal 	move_to_tile
 
 infinite:
@@ -292,6 +292,7 @@ euclidean_dist:
 	timer_interrupt:
 		sw	$a1, TIMER_ACK		                       # acknowledge interrupt
 
+		# get the movement state
 		la 	$t0, move_state
 		lw  $t1, 0($t0)                             
 
@@ -299,21 +300,8 @@ euclidean_dist:
 		# movement of the bot (or jump to done)
 		beq $0, $t1, timer_interrupt_done
 
-		# otherwise make sure we're approximately 
-		# at the desired position, clear the velocity, 
-		# and reset the movement state
-		lw  $t1, 4($t0)                                # desired x position
-		lw  $t2, BOT_X                                 # current x position
-		sub $t1, $t1, $t2
-		abs $t1, $t1
-		bgt $t1, 15, timer_interrupt_done
-
-		lw  $t1, 8($t0)                                # desired y position
-		lw  $t2, BOT_Y                                 # current y position
-		sub $t1, $t1, $t2
-		abs $t1, $t1
-		bgt $t1, 15, timer_interrupt_done
-
+		# clear the velocity and invalidate the 
+		# movement state
 		sw 	$0, VELOCITY
 		sw  $0, 0($t0)
 
