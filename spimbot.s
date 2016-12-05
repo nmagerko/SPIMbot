@@ -74,89 +74,7 @@ main:
 	mtc0 $t0, $12		#enable interrupts
 
 	j main
-
-#fire interrupt
-
-.kdata
-	chunkIH: .space 24
-	non_intrpt_str:	.asciiz "Non-interrupt exception\n"
-	unhandled_str:	.asciiz "Unhandled interrupt type\n"
-
-.ktext 0x80000180
-interrupt_handler:
-.set noat
-	move $k1, $at
-.set at
-	la $k0, chunkIH
-	sw $t0, 0($k0)
-	sw $t1, 4($k0)
-	sw $t2, 8($k0)
-	sw $t3, 12($k0)
-	sw $a0, 16($k0)
-	sw $a1, 20($k0)
-
-	mfc0 $k0, $13
-	srl $a0, $k0, 2
-	and $a0, $a0, 0xf
-	bne $a0, 0, non_intrpt
-
-interrupt_dispatch:
-	mfc0 $k0, $13 										# Get Cause register, again
-	beq $k0, $0, done									# handled all outstanding interrupts
-
-	# Interrupt dispatches
-
-	and $a0, $k0, REQUEST_PUZZLE_INT_MASK				#is there a puzzle interrupt?
-	bne $a0, $0, puzzle_interrupt
-
-	# Unhandled interrupt types
-
-	li	$v0, PRINT_STRING
-	la	$a0, unhandled_str
-	syscall
-	j	done
-
-puzzle_interrupt:
-	sw	$a1, REQUEST_PUZZLE_ACK							# acknowledge interrupt
-	la $t1, current_puzzle_is_ready
-	lw $t0, 0($t1)
-	li $t0, 1
-	# Branch if the current puzzle is already ready (being solved)
-	beq $t0, 1, puzzle_interrupt_next_puzzle_is_ready
-		# Set the current puzzle as ready
-		sw $t0, 0($t1)
-		j puzzle_interrupt_finish
-
-	puzzle_interrupt_next_puzzle_is_ready:
-		# Set the next puzzle as ready
-		la $t1, current_puzzle_is_ready
-		sw $t0, 0($t1)
-		#fall through to finish
-
-	puzzle_interrupt_finish:
-		j interrupt_dispatch
-
-non_intrpt:
-	li	$v0, PRINT_STRING
-	la	$a0, non_intrpt_str
-	syscall				# print out an error message
-	# fall through to done
-
-done:
-	la $k0, chunkIH
-	# Restore variables
-	lw $t0, 0($k0)
-	lw $t1, 4($k0)
-	lw $t2, 8($k0)
-	lw $t3, 12($k0)
-	lw $a0, 16($k0)
-	lw $a1, 20($k0)
-
-.set noat
-	move $at, $k1
-.set at
-	eret
-
+	
 #####################
 # Main program code	#
 #####################
@@ -297,6 +215,88 @@ solve_puzzle:
 	jal recursive_backtracking
 
 	jr $ra
+
+#fire interrupt
+
+.kdata
+	chunkIH: .space 24
+	non_intrpt_str:	.asciiz "Non-interrupt exception\n"
+	unhandled_str:	.asciiz "Unhandled interrupt type\n"
+
+.ktext 0x80000180
+interrupt_handler:
+.set noat
+	move $k1, $at
+.set at
+	la $k0, chunkIH
+	sw $t0, 0($k0)
+	sw $t1, 4($k0)
+	sw $t2, 8($k0)
+	sw $t3, 12($k0)
+	sw $a0, 16($k0)
+	sw $a1, 20($k0)
+
+	mfc0 $k0, $13
+	srl $a0, $k0, 2
+	and $a0, $a0, 0xf
+	bne $a0, 0, non_intrpt
+
+interrupt_dispatch:
+	mfc0 $k0, $13 										# Get Cause register, again
+	beq $k0, $0, done									# handled all outstanding interrupts
+
+	# Interrupt dispatches
+
+	and $a0, $k0, REQUEST_PUZZLE_INT_MASK				#is there a puzzle interrupt?
+	bne $a0, $0, puzzle_interrupt
+
+	# Unhandled interrupt types
+
+	li	$v0, PRINT_STRING
+	la	$a0, unhandled_str
+	syscall
+	j	done
+
+puzzle_interrupt:
+	sw $a1, REQUEST_PUZZLE_ACK							# acknowledge interrupt
+	la $t1, current_puzzle_is_ready
+	lw $t1, 0($t1)
+	li $t0, 1
+	# Branch if the current puzzle is already ready (being solved)
+	beq $t1, 1, puzzle_interrupt_next_puzzle_is_ready
+		# Set the current puzzle as ready
+		sw $t0, 0($t1)
+		j puzzle_interrupt_finish
+
+	puzzle_interrupt_next_puzzle_is_ready:
+		# Set the next puzzle as ready
+		la $t1, current_puzzle_is_ready
+		sw $t0, 0($t1)
+		#fall through to finish
+
+	puzzle_interrupt_finish:
+		j interrupt_dispatch
+
+non_intrpt:
+	li	$v0, PRINT_STRING
+	la	$a0, non_intrpt_str
+	syscall				# print out an error message
+	# fall through to done
+
+done:
+	la $k0, chunkIH
+	# Restore variables
+	lw $t0, 0($k0)
+	lw $t1, 4($k0)
+	lw $t2, 8($k0)
+	lw $t3, 12($k0)
+	lw $a0, 16($k0)
+	lw $a1, 20($k0)
+
+.set noat
+	move $at, $k1
+.set at
+	eret
 
 ##########################
 # BEGIN HELPER FUNCTIONS #
