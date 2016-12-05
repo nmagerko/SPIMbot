@@ -107,6 +107,8 @@ next_puzzle_is_ready:
 
 .text
 main:
+	sw $0 , VELOCITY
+
 	sub $sp, $sp, 12
 	sw 	$ra, 0($sp)
 	sw 	$s0, 4($sp)
@@ -116,7 +118,7 @@ main:
 	li $t0, 1
 	ori $t0, $t0, TIMER_MASK
 	#ori $t0, $t0, MAX_GROWTH_INT_MASK
-	#ori $t0, $t0, ON_FIRE_MASK
+	ori $t0, $t0, ON_FIRE_MASK
 	ori $t0, $t0, REQUEST_PUZZLE_INT_MASK
 	mtc0 $t0, $12
 
@@ -173,7 +175,7 @@ resource_collection_loop:
     lw $t1, 0($t1)
     la $t2, water
     lw $t2, 0($t2)
-    mul $t1, $t1, 5																	#change it to get less/more water
+    mul $t1, $t1, 4																	#change it to get less/more water
 
     # when the water is greater than the seeds, we'll
     # try requesting seeds; else we !! fall through to water !!
@@ -261,7 +263,7 @@ move_end:
 action:
 # 	# keep track of our bot
 	# this is the amount of water
-	li $t9, 10															#modify this to put more water
+	li $t9, 6															#modify this to put more water
 
 	
 # harvest_or_plant:
@@ -368,313 +370,457 @@ action:
 # 	j harvest_or_plant
 
 ################################################4*4
-	# li $a0, 9
-	# li $a1, 9
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 271
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
-	# li $a0, 9
-	# li $a1, 7
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
-
-
-
-
-	# li $a0, 6
-	# li $a1, 8
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
-
-
-
-	# li $a0, 6
-	# li $a1, 6
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
-	# li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
-
-
-
-	# li $a0, 7
-	# li $a1, 9
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 271
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
 
-	# li $a0, 8
-	# li $a1, 6
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
-	# li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 268
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
-	# li $a0, 9
-	# li $a1, 8
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 268
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
-	# li $a0, 7
-	# li $a1, 7
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 181
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
-	# li $a0, 6
-	# li $a1, 9
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
 
-
-	# li $a0, 8
-	# li $a1, 8
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 178
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
 
-	# li $a0, 9
-	# li $a1, 6
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
-	# li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 178
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
-	# li $a0, 7
-	# li $a1, 6
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+
+	li $a0, 181
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
-	# li $a0, 6
-	# li $a1, 7
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
-	# li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+
+	li $a0, 181
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
-	# li $a0, 8
-	# li $a1, 7
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 178
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
-	# li $a0, 8
-	# li $a1, 9
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+
+	li $a0, 178
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
 
-	# li $a0, 7
-	# li $a1, 8
-	# li $a2, 10
-	# li $a3, 0				# 0 means move via tile
-	# jal move_to
-	# li $t4, 1
-	# sw $t4, HARVEST_TILE
- # 	li $t4, 1		
-	# sw $t4, SEED_TILE
-	# sw $t9, WATER_TILE
+	li $a0, 181
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 268
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 271
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 271
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 268
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 ################################################4*4
 
 ################################################3*3
-	li $a0, 9
-	li $a1, 9
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 7
-	li $a1, 8
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 9
-	li $a1, 7
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 8
-	li $a1, 9
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 7
-	li $a1, 7
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 9
-	li $a1, 8
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 7
-	li $a1, 9
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-	
-	li $a0, 8
-	li $a1, 7
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+# 	li $a0, 9
+# 	li $a1, 9
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
 
-	li $a0, 8
-	li $a1, 8
-	li $a2, 10
-	li $a3, 0				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
-	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
-################################################3*3
+	
+
+# 	li $a0, 7
+# 	li $a1, 8
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+	
+# 	li $a0, 9
+# 	li $a1, 7
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+	
+# 	li $a0, 8
+# 	li $a1, 9
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+	
+# 	li $a0, 7
+# 	li $a1, 7
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+
+	
+# 	li $a0, 9
+# 	li $a1, 8
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+	
+# 	li $a0, 7
+# 	li $a1, 9
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+	
+# 	li $a0, 8
+# 	li $a1, 7
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+
+# 	li $a0, 8
+# 	li $a1, 8
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+# 	sw $t9, BURN_TILE
+
+
+# ################################################3*3
+
+
+# ################################################only 5
+
+# 	li $a0, 9
+# 	li $a1, 9
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+# 	jal seek_for_fire
+
+# 	li $a0, 8
+# 	li $a1, 8
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+# 	jal seek_for_fire
+
+# 	li $a0, 7
+# 	li $a1, 7
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+# 	jal seek_for_fire
+
+# 	li $a0, 9
+# 	li $a1, 7
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+# 	sw $t9, BURN_TILE
+
+# 	jal seek_for_fire
+
+# 	li $a0, 7
+# 	li $a1, 9
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+# 	li $t4, 1
+# 	sw $t4, HARVEST_TILE
+#  	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	sw $t9, WATER_TILE
+
+# 	jal seek_for_fire
+
+################################################only 5
+
 
 skip_to_next_round:
 	j action
 
+
+###handle_fire###
+seek_for_fire:
+
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
+
+	la $t0, is_fire
+	lw $t0, 0($t0)
+	beq $t0, $0, no_fire
+
+	la    $t0, fire_location
+	lw    $t1, 0($t0)
+	srl   $a0, $t1, 16
+	sll   $t2, $a0, 16
+	sub   $a1, $t1, $t2
+	li $a2, 10
+	li $a3, 0
+	jal move_to
+	sw $0, PUT_OUT_FIRE	
+
+	la $t0, is_fire
+	sw $0, 0($t0)
+
+no_fire:
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
+
+	jr $ra
 
 #####################
 # Main program code #
@@ -1542,6 +1688,8 @@ interrupt_dispatch:
 	and	$a0, $k0, TIMER_MASK	                # is there a timer interrupt?
 	bne	$a0, 0, timer_interrupt
 
+    	and   $a0, $k0, ON_FIRE_MASK                 # is there something on fire that we'll handle?
+    	bne   $a0, 0, fire_interrupt
 
 	and $a0, $k0, REQUEST_PUZZLE_INT_MASK		#is there a puzzle interrupt?
 	bne $a0, $0, puzzle_interrupt
@@ -1573,6 +1721,19 @@ timer_interrupt:
 
 	timer_interrupt_done:
 		j	interrupt_dispatch		# see if other interrupts are waiting
+
+fire_interrupt:
+	sw    $k0, ON_FIRE_ACK                       # acknowledge fire interrupt
+    
+    	lw    $t0, GET_FIRE_LOC                      # retrieve fire location and store
+    	la    $t1, fire_location
+    	sw    $t0, 0($t1)
+
+    	la    $t0, is_fire
+    	li    $t1, 1
+    	sw    $t1, 0($t0)
+
+    	j	  interrupt_dispatch	                 # see if other interrupts are waiting 
 
 puzzle_interrupt:
 	sw $a1, REQUEST_PUZZLE_ACK			# acknowledge interrupt
@@ -1614,4 +1775,5 @@ done:
 	move $at, $k1
 .set at
 	eret
+
 
