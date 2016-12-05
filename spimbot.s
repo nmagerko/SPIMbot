@@ -48,42 +48,31 @@ REQUEST_PUZZLE_ACK      = 0xffff00d8
 REQUEST_PUZZLE_INT_MASK = 0x800
 
 
-
 .data
-# Space for puzzle solutions
-solution_data: .space 328;
-# Space to hold two puzzles
-puzzle1_data: .space 4096;
-puzzle2_data: .space 4096;
-#This will alternate between puzzle1 and puzzle2.
-next_puzzle_pointer: .word 0;
-current_puzzle_pointer: .word 0;
-#How many puzzles are unsolved
-num_puzzles: .byte 0x0000;
-current_puzzle_is_ready: .byte 0x0000;
-next_puzzle_is_ready: .byte 0x0000;
-
-tile_data: .space 1600
-
-move_state:
-		.word 	0, 0, 0
-seeds:
+tile_data: 
+	.space 1600
+seeds: 
 	.word 10
 water:
 	.word 100
-
-puzzle_track:
+puzzle_types:
 	.word 0, 0
-isfire:
+is_fire:
 	.word 0
-fire_place:
+fire_location:
 	.word 0, 0
-isripe:
+max_growth_seen:
 	.word 0
 ripe_place:
 	.word 0, 0
 final_tile:
 	.word 0, 0
+
+# the current movement state structure
+# contents are [valid, world_x, world_y]
+move_state:
+		.word 	0, 0, 0
+
 # [imported - taylor.s]
 three:	
 		.float	3.0
@@ -94,536 +83,289 @@ PI:
 F180:	
 		.float  180.0
 
+# Space for puzzle solutions
+solution_data: 
+	.space 328;
+# Space to hold two puzzles
+puzzle1_data: 
+	.space 4096;
+puzzle2_data: 
+	.space 4096;
+#This will alternate between puzzle1 and puzzle2.
+next_puzzle_pointer: 
+	.word 0;
+current_puzzle_pointer: 
+	.word 0;
+#How many puzzles are unsolved
+num_puzzles: 
+	.byte 0;
+current_puzzle_is_ready: 
+	.byte 0;
+next_puzzle_is_ready: 
+	.byte 0;
+
 
 .text
 main:
-	
+	sub $sp, $sp, 12
+	sw 	$ra, 0($sp)
+	sw 	$s0, 4($sp)
+	sw  $s1, 8($sp)
+
+	# enable all interrupts
 	li $t0, 1
 	ori $t0, $t0, TIMER_MASK
 	ori $t0, $t0, MAX_GROWTH_INT_MASK
+	ori $t0, $t0, ON_FIRE_MASK
 	ori $t0, $t0, REQUEST_PUZZLE_INT_MASK
-	mtc0 $t0, $12		#enable  interrupt
+	mtc0 $t0, $12
 
-action:
+	# prime the tile data
+	# (might remove later)
 	la $t0, tile_data
 	sw $t0, TILE_SCAN
 
-	sub $sp, $sp, 20
-	sw $ra, 0($sp)
-	sw $v0, 4($sp)
-	sw $a0, 8($sp)
-	sw $a1, 12($sp)
-	sw $a2, 16($sp)
 
+	# after every loop, we move back to the
+	# start of the field; we use the tile form
 	li $a0, 9
 	li $a1, 9
 	li $a2, 10
-
-	jal move_package_tile
-
-	lw $ra, 0($sp)
-	lw $v0, 4($sp)
-	lw $a0, 8($sp)
-	lw $a1, 12($sp)
-	sw $a2, 16($sp)
-
-	add $sp, $sp, 20
-
-stop_moving_and_plant:
-
-        sub $sp, $sp, 16
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-
-        li $a0, 10
-        li $a1, 10
-
-        jal harvesting_planting
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-
-        add $sp, $sp, 16
-
-	j action	
-
-	j main
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	j action
 
 
-########################function harversting_planting
-harvesting_planting:
+	
 
-	li $t2, 9
-	li $t1, 4		#vertical move number
 
-no_harvest_workloop:
-	beq $t1, 0, next_line	# one line ends
-	la $t0, final_tile
+### step one ###
+move_to:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
+
+	# set the bot in motion and then start trying
+	# to collect resources !! fall through !!
+	bne $a3, 0, move_via_pixel
+
+move_via_tile:
+	jal move_to_tile
+	j resource_collection_loop
+move_via_pixel:
+	jal move_to_pixel
+
+resource_collection_loop:
+	# we will only harvest as long as we are moving
+	la $t0, move_state
+    lw $t0, 0($t0)
+    beq, $t0, $0, move_end
+
+    # we try to request a puzzle, or we start solving
+    # the ones we have immediately
+    jal can_request_puzzle
+   	beq $v0, $0, start_solving_puzzles
+	
+
+   	# otherwise we decide which type of request
+   	# we want to make
+	la $t1, seeds
+    lw $t1, 0($t1)
+    la $t2, water
+    lw $t2, 0($t2)
+
+    # when the water is greater than the seeds, we'll
+    # try requesting seeds; else we !! fall through to water !!
+	bgt $t2, $t1, request_seed_puzzle
+
+request_water_puzzle:
+	jal request_water
+
+	li  $t2, 2
+	j   update_puzzle_type
+
+request_seed_puzzle:
+	jal request_seeds
+	li 	$t2, 1
+	j 	update_puzzle_type
+
+update_puzzle_type:
+	la 	$t0, puzzle_types
+	lw 	$t1, 0($t0)
+
+	# when the type in the first position is
+	# non-zero, the value in the second position must
+	# be zero (else can_request_puzzle would be false)
+	# !! note the fall-through !!
+	beq $t1, $0, update_puzzle_type_first_position
+
+update_puzzle_type_second_position:
+	sw 	$t2, 4($t0)
+	j 	start_solving_puzzles
+
+update_puzzle_type_first_position:
+	sw 	$t2, 0($t0)
+
+start_solving_puzzles:
+	# try to solve the puzzles, or start it all over again
+	jal can_solve_puzzle
+	beq $v0, $0, resource_collection_loop
+
+	jal solve_puzzle 
+	jal submit_puzzle
+
+	# the most recently solved puzzle is always associated
+	# with the first position (see role_over_puzzle_type below)
+	la $t0, puzzle_types
+	lw $t1, 0($t0)
+
+	# when the type is 1, we are updating seeds; otherwise
+	# we !! fall-through to update water !!
+	beq $t1, 1, update_seeds
+
+update_water:
+	# each update of water adds ten droplets
+	la $t2, water
+	lw $t3, 0($t2)
+	add $t3, $t3, 10
+	sw 	$t3, 0($t2)
+	j 	roll_over_puzzle_type
+
+update_seeds:
+	# each update of seeds adds three seeds
+	la $t2, seeds
+	lw $t3, 0($t2)
+	add $t3, $t3, 3
+	sw 	$t3, 0($t2)
+
+roll_over_puzzle_type:
+	# again, we always want the first position of
+	# the types to be associated with the next available
+	# puzzle (if it exists)
+	lw $t2, 4($t0)
+	sw $t2, 0($t0)
+
+	# we want to keep collecting resources, if possible
+	j 	resource_collection_loop
+
+move_end:
+	# we stopped moving, so we're done for now
+	lw  $ra, 0($sp)
+	add $sp, $sp, 4
+	jr 	$ra
+
+
+
+### step two ###
+action:
+	# keep track of our bot
+	li $s0, 9
+	li $s1, 9
+	
+harvest_or_plant:
+	ble $s1, 5, skip_to_next_line
+
+	la $t0, final_tile		#if it passes the final tile
 	lw $t3, 0($t0)
 	lw $t4, 4($t0)
-	blt $t1, $t3, next_round_harvest
-	blt $t2, $t4, next_round_harvest 
+	blt $s0, $t3, skip_to_next_round
+	blt $s1, $t4, skip_to_next_round
 
 	la $t0, tile_data
 	sw $t0, TILE_SCAN
-	
-        sub $sp, $sp, 32	#go to next tile
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-	sw $t0, 20($sp)
-	sw $t1, 24($sp)
-	sw $t2, 28($sp)
 
-	move $a0, $t2
-	add $a1, $t1, 5
-        li $a2, 10
-        jal move_package_tile
+	move $a0, $s0
+	move $a1, $s1
+    li $a2, 10
+    li $a3, 0					# 0 means move via tile
+    jal move_to
 
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        lw $a2, 16($sp)
-	lw $t0, 20($sp)
-	lw $t1, 24($sp)
-	lw $t2, 28($sp)
-        add $sp, $sp, 32	
-
-	la $t5, is_ripe		#(9,9) ripe! harvest time!
-	beq $t5, $0, no_harvest_then
+    # we always plant after we harvest, but
+    # will not harvest until after we reach
+    # the maximum growth point
+	la $t5, max_growth_seen
+	beq $t5, $0, begin_planting
  
+begin_harvest:
 	li $t9, 1
 	sw $t9, HARVEST_TILE
-	
 
-no_harvest_then:
-	li $t4, 1	
-	sw $t4, SEED_TILE	#seed	
+begin_planting:
+	# set down seed and water the plant
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	la $t4, seeds
+	lw $t5, 0($t4)
+	sub $t5, $t5, 1
+	sw $t5, 0($t4)
+
 	li $t4, 4
-	sw $t4, WATER_TILE	#water
+	sw $t4, WATER_TILE
+	la $t4, water
+	lw $t5, 0($t4)
+	sub $t5, $t5, 4
+	sw $t5, 0($t4)
 
-	la $t4, isfire
-	beq $t4, $0, no_fire	# there is a fire
+begin_fire_check:
+	# before trying to finish this tile, we need
+	# to go put out a fire and come back later 
+	la $t4, is_fire
+	beq $t4, $0, begin_max_growth_check
 
-	la $t4, fire_place	#go to fire
+begin_fire_handling:
+	la $t4, fire_location
 	
-	sub $sp, $sp, 32
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-        sw $t0, 20($sp)
-        sw $t1, 24($sp)
-        sw $t2, 28($sp)
+    lw $a0, 0($t4)
+    lw $a1, 4($t4)
+    li $a2, 10
+    li $a3, 1			# 1 means move via pixel address
+    jal move_to
 
-        lw $a0, 0($t4)
-        lw $a1, 4($t4)
-        li $a2, 10
-        jal move_package_pixel
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        lw $a2, 16($sp)
-        lw $t0, 20($sp)
-        lw $t1, 24($sp)
-        lw $t2, 28($sp)
-        add $sp, $sp, 32
-
+    # we've arrived at the fire; put it out
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	la $t4, isfire
-	lw $0, 0($t4)	#set the isfire back to 0
-
-no_fire:
-
-	la $t4, isripe
-	beq $t4, $0, no_ripe
-
-#	la $t4, start_to_ripe
-#	li $t5, 1
-#	lw $t5, 0($t4)
-
-	la $t4, final_tile		# save the final spot
-	sw $t1, 0($t4)
-	sw $t2, 4($t4)
-
-        sub $sp, $sp, 32        #try to move back incase there is a fire
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-        sw $t0, 20($sp)
-        sw $t1, 24($sp)
-        sw $t2, 28($sp)
-
-        li $a0, 9
-        li $a1, 9
-        li $a2, 10
-        jal move_package_tile
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        lw $a2, 16($sp)
-        lw $t0, 20($sp)
-        lw $t1, 24($sp)
-        lw $t2, 28($sp)
-        add $sp, $sp, 32
-
-
-        j no_harvest_workloop
-
-no_ripe:
-#	mul $t4, $t1, $t2
-#	div $t4, 2
-#	mfhi $t4
-
-        sub $sp, $sp, 32        #try to move back incase there is a fire
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-        sw $t0, 20($sp)
-        sw $t1, 24($sp)
-        sw $t2, 28($sp)
-
-        move $a0, $t2
-        add $a1, $t1, 5
-        li $a2, 10
-        jal move_package_tile
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        lw $a2, 16($sp)
-        lw $t0, 20($sp)
-        lw $t1, 24($sp)
-        lw $t2, 28($sp)
-        add $sp, $sp, 32
-
-	sub $t1, $t1, 1
-	j no_harvest_workloop
-		
-next_line:
-	sub $t2, $t2, 1
-	li $t1, 4
-
-	j no_harvest_workloop
-
-next_round_harvest:
-	li $t1, 9
-	li $t2, 9
-
-	j no_harvest_workloop		
-
-end:
-	jr $ra
-
-
-#######################function move_package_pixel
-move_package_pixel:
-        sub $sp, $sp, 20
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-
-        jal move_to_pixel
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        sw $a2, 16($sp)
-
-        add $sp, $sp, 20
-
-while1:
-        la $t0, move_state
-        lw $t0, 0($t0)
-        beq, $t0, $0, end_move_package_pixel
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal can_request_puzzle			#can request
-        move $t0, $v0
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-        beq $t0, $0, no_request
-
-        la $t1, seed
-        lw $t1, 0($t1)
-        la $t2, water
-        lw $t2, 0($t2)
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-	bge $t2, $t1, requestseed
-        blt $t2, $t1, requestwater
-requestseed:
-        jal request_seed			#request
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-	add $sp, $sp, 8
-
-	la $t0, puzzle_track			#update puzzle track
-	lw $t1, 0($t0)
-	beq $t1, $0, update1
-	bne $t1, $0, update2
-update1:
-	li $t1, 1
-	sw $t1, 0($t0)
-	j done_request
-
-update2:
-	li $t1, 1
-	sw $t1, 4($t0)
-	j done_request
-
-requestwater:
-        jal request_water
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-	add $sp, $sp, 8
-
-	la $t0, puzzle_track			#update puzzle track
-	lw $t1, 0($t0)
-	beq $t1, $0, update1
-	bne $t1, $0, update2
-update1:
-	li $t1, 2
-	sw $t1, 0($t0)
-	j done_request
-
-update2:
-	li $t1, 2
-	sw $t1, 4($t0)
-	j done_request
-
-done_request:
-no_request:
-	sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal can_solve_puzzle                  #can solve puzzle
-        move $t0, $v0
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-	beq $t0, $0, no_solve
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal solve_puzzle                  	#solve puzzle
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal submit_puzzle                        #submit puzzle
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-	la $t0, puzzle_track			#add send/water, and track the puzzle
-	lw $t1, 0($t0)
-	beq $t1, 1, addseed
-	beq $t1, 2, addwater
-	
-addseed:					#add seed
-	la $t3, seed
-	lw $t4, 0($t3)
-	add $t4, $t4, 3
-	sw $t4, 0($t3)
-	j done_adding
-
-addwater:					#add water
-	la $t3, water
-	lw $t4, 0 ($t3)
-	add $t4, $t4, 10
-	sw $t4, 0($t3)
-
-done_adding:					#track the puzzle, update the first, ignore second
-	lw $t2, 4($t0)
-	sw $t2, 0($t0)
-
-
-no_solve:
-        j while1
-	
-
-end_move_package_pixel:
-	jr $ra
-
-
-
-#######################function move_package_tile
-move_package_tile:
-        sub $sp, $sp, 20
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        sw $a0, 8($sp)
-        sw $a1, 12($sp)
-        sw $a2, 16($sp)
-
-        jal move_to_tile
-
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        lw $a0, 8($sp)
-        lw $a1, 12($sp)
-        sw $a2, 16($sp)
-
-        add $sp, $sp, 20
-
-while1:
-        la $t0, move_state
-        lw $t0, 0($t0)
-        beq, $t0, $0, end_move_package_tile
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal can_request_puzzle			#can request
-        move $t0, $v0
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-        beq $t0, $0, no_request
-
-        la $t1, seed
-        lw $t1, 0($t1)
-        la $t2, water
-        lw $t2, 0($t2)
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-	bge $t2, $t1, requestseed
-        blt $t2, $t1, requestwater
-requestseed:
-        jal request_seed			#request
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-	add $sp, $sp, 8
-
-	la $t0, puzzle_track			#update puzzle track
-	lw $t1, 0($t0)
-	beq $t1, $0, update1
-	bne $t1, $0, update2
-update1:
-	li $t1, 1
-	sw $t1, 0($t0)
-	j done_request
-
-update2:
-	li $t1, 1
-	sw $t1, 4($t0)
-	j done_request
-
-requestwater:
-        jal request_water
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-	add $sp, $sp, 8
-
-	la $t0, puzzle_track			#update puzzle track
-	lw $t1, 0($t0)
-	beq $t1, $0, update1
-	bne $t1, $0, update2
-update1:
-	li $t1, 2
-	sw $t1, 0($t0)
-	j done_request
-
-update2:
-	li $t1, 2
-	sw $t1, 4($t0)
-	j done_request
-
-done_request:
-no_request:
-	sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal can_solve_puzzle                  #can solve puzzle
-        move $t0, $v0
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-	beq $t0, $0, no_solve
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal solve_puzzle                  	#solve puzzle
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-        sub $sp, $sp, 8
-        sw $ra, 0($sp)
-        sw $v0, 4($sp)
-        jal submit_puzzle                        #submit puzzle
-        lw $ra, 0($sp)
-        lw $v0, 4($sp)
-        add $sp, $sp, 8
-
-	la $t0, puzzle_track			#add send/water, and track the puzzle
-	lw $t1, 0($t0)
-	beq $t1, 1, addseed
-	beq $t1, 2, addwater
-	
-addseed:					#add seed
-	la $t3, seed
-	lw $t4, 0($t3)
-	add $t4, $t4, 3
-	sw $t4, 0($t3)
-	j done_adding
-
-addwater:					#add water
-	la $t3, water
-	lw $t4, 0 ($t3)
-	add $t4, $t4, 10
-	sw $t4, 0($t3)
-
-done_adding:					#track the puzzle, update the first, ignore second
-	lw $t2, 4($t0)
-	sw $t2, 0($t0)
-
-
-no_solve:
-        j while1
-	
-
-end_move_package_tile:
-	jr $ra
-
+	la $t4, is_fire
+	lw $0, 0($t4)
+
+begin_max_growth_check:
+	la $t4, max_growth_seen
+	beq $t4, $0, continue_harvest_or_plant
+
+halt_for_growth:
+	# prepare to travel back to the beginning
+	# of the round in order to harvest the plants
+	# (store the current position globally and move back)
+	la $t4, final_tile
+	sw $s0, 0($t4)
+	sw $s1, 4($t4)
+
+    li $a0, 9
+    li $a1, 9
+    li $a2, 10
+    li $a3, 0 				# 0 means move via tile
+    jal move_to
+
+    j harvest_or_plant
+
+continue_harvest_or_plant:
+	# if we don't receive a MAX_GROWTH interrupt, we need to
+	# go back to the current position
+	move $a0, $s0
+	move $a1, $s1
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+
+	sub $s1, $s1, 1
+    j harvest_or_plant
+
+skip_to_next_line:
+	sub $s0, $s0, 1
+	li $s1, 9
+
+	j harvest_or_plant
+
+skip_to_next_round:
+	j action
 
 
 #####################
