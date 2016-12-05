@@ -1,3 +1,5 @@
+CS 233 SPIMbot
+
 We chose to focus our bot's efforts exclusively on obtaining a high yield. Instead of trying to
 divide time between planting/harvesting and sabotage, our bot works to outplay opponents by 
 simply planting/harvesting as quickly as possible. By optimizing our bot for rapid resource 
@@ -32,18 +34,18 @@ itself, as it permits us to touch all tiles in a set without having to move very
 
 Solo tests of this bot have yielded satisfactory results.
 
-							-------------------------------
-							|  x  |  x  |     |  x  |  x  |
-							--------------->---------------
-							|  x  |  x  |     |  x  |  x  |
-							-------------------------------
-							|     ^     |     |     |     |
-							-------------------------------
-							|  x  |  x  |     |  x  |  x  |
-							---------------<---------------
-							|  x  |  x  |     |  x  |  x  |
-							-------------------------------
-							Figure 1. The planting pattern. 
-							x's represents a possible seed 
-							placement. Arrows represent 
-							bot's movement path.
+-------------------------------
+|  x  |  x  |     |  x  |  x  |
+--------------->---------------
+|  x  |  x  |     |  x  |  x  |
+-------------------------------
+|     ^     |     |     |     |
+-------------------------------
+|  x  |  x  |     |  x  |  x  |
+---------------<---------------
+|  x  |  x  |     |  x  |  x  |
+-------------------------------
+Figure 1. The planting pattern. 
+x's represents a possible seed 
+placement. Arrows represent 
+bot's movement path.
