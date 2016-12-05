@@ -115,8 +115,8 @@ main:
 	# enable all interrupts
 	li $t0, 1
 	ori $t0, $t0, TIMER_MASK
-	ori $t0, $t0, MAX_GROWTH_INT_MASK
-	ori $t0, $t0, ON_FIRE_MASK
+	#ori $t0, $t0, MAX_GROWTH_INT_MASK
+	#ori $t0, $t0, ON_FIRE_MASK
 	ori $t0, $t0, REQUEST_PUZZLE_INT_MASK
 	mtc0 $t0, $12
 
@@ -125,6 +125,7 @@ main:
 	la $t0, tile_data
 	sw $t0, TILE_SCAN
 
+	jal initialize_puzzle_pointers
 
 	# after every loop, we move back to the
 	# start of the field; we use the tile form
@@ -158,7 +159,7 @@ resource_collection_loop:
 	# we will only harvest as long as we are moving
 	la $t0, move_state
     lw $t0, 0($t0)
-    beq, $t0, $0, move_end
+    beq $t0, $0, move_end
 
     # we try to request a puzzle, or we start solving
     # the ones we have immediately
@@ -172,6 +173,7 @@ resource_collection_loop:
     lw $t1, 0($t1)
     la $t2, water
     lw $t2, 0($t2)
+    mul $t1, $t1, 5																	#change it to get less/more water
 
     # when the water is greater than the seeds, we'll
     # try requesting seeds; else we !! fall through to water !!
@@ -257,112 +259,418 @@ move_end:
 
 ### step two ###
 action:
-	# keep track of our bot
-	li $s0, 9
-	li $s1, 9
+# 	# keep track of our bot
+	# this is the amount of water
+	li $t9, 10															#modify this to put more water
+
 	
-harvest_or_plant:
-	ble $s1, 5, skip_to_next_line
+# harvest_or_plant:
+# 	ble $s1, 5, skip_to_next_line
 
-	la $t0, final_tile		#if it passes the final tile
-	lw $t3, 0($t0)
-	lw $t4, 4($t0)
-	blt $s0, $t3, skip_to_next_round
-	blt $s1, $t4, skip_to_next_round
+# 	la $t0, final_tile		#if it passes the final tile
+# 	lw $t3, 0($t0)
+# 	lw $t4, 4($t0)
+# 	blt $s0, $t3, skip_to_next_round
+# 	blt $s1, $t4, skip_to_next_round
 
-	la $t0, tile_data
-	sw $t0, TILE_SCAN
+# 	la $t0, tile_data
+# 	sw $t0, TILE_SCAN
 
-	move $a0, $s0
-	move $a1, $s1
-    li $a2, 10
-    li $a3, 0					# 0 means move via tile
-    jal move_to
+# 	move $a0, $s0
+# 	move $a1, $s1
+#     li $a2, 10
+#     li $a3, 0					# 0 means move via tile
+#     jal move_to
 
-    # we always plant after we harvest, but
-    # will not harvest until after we reach
-    # the maximum growth point
-	la $t5, max_growth_seen
-	beq $t5, $0, begin_planting
+#     # we always plant after we harvest, but
+#     # will not harvest until after we reach
+#     # the maximum growth point
+# 	la $t5, max_growth_seen
+# 	beq $t5, $0, begin_planting
  
-begin_harvest:
-	li $t9, 1
-	sw $t9, HARVEST_TILE
+# begin_harvest:
+# 	li $t9, 1
+# 	sw $t9, HARVEST_TILE
 
-begin_planting:
-	# set down seed and water the plant
-	li $t4, 1		
-	sw $t4, SEED_TILE
-	la $t4, seeds
-	lw $t5, 0($t4)
-	sub $t5, $t5, 1
-	sw $t5, 0($t4)
+# begin_planting:
+# 	# set down seed and water the plant
+# 	li $t4, 1		
+# 	sw $t4, SEED_TILE
+# 	la $t4, seeds
+# 	lw $t5, 0($t4)
+# 	sub $t5, $t5, 1
+# 	sw $t5, 0($t4)
 
-	li $t4, 4
-	sw $t4, WATER_TILE
-	la $t4, water
-	lw $t5, 0($t4)
-	sub $t5, $t5, 4
-	sw $t5, 0($t4)
+# 	li $t4, 4
+# 	sw $t4, WATER_TILE
+# 	la $t4, water
+# 	lw $t5, 0($t4)
+# 	sub $t5, $t5, 4
+# 	sw $t5, 0($t4)
 
-begin_fire_check:
-	# before trying to finish this tile, we need
-	# to go put out a fire and come back later 
-	la $t4, is_fire
-	beq $t4, $0, begin_max_growth_check
+# begin_fire_check:
+# 	# before trying to finish this tile, we need
+# 	# to go put out a fire and come back later 
+# 	la $t4, is_fire
+# 	beq $t4, $0, begin_max_growth_check
 
-begin_fire_handling:
-	la $t4, fire_location
+# begin_fire_handling:
+# 	la $t4, fire_location
 	
-    lw $a0, 0($t4)
-    lw $a1, 4($t4)
-    li $a2, 10
-    li $a3, 1			# 1 means move via pixel address
-    jal move_to
+#     lw $a0, 0($t4)
+#     lw $a1, 4($t4)
+#     li $a2, 10
+#     li $a3, 1			# 1 means move via pixel address
+#     jal move_to
 
-    # we've arrived at the fire; put it out
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	la $t4, is_fire
-	lw $0, 0($t4)
+#     # we've arrived at the fire; put it out
+# 	li $t4, 1
+# 	sw $t4, PUT_OUT_FIRE
+# 	la $t4, is_fire
+# 	lw $0, 0($t4)
 
-begin_max_growth_check:
-	la $t4, max_growth_seen
-	beq $t4, $0, continue_harvest_or_plant
+# begin_max_growth_check:
+# 	la $t4, max_growth_seen
+# 	beq $t4, $0, continue_harvest_or_plant
 
-halt_for_growth:
-	# prepare to travel back to the beginning
-	# of the round in order to harvest the plants
-	# (store the current position globally and move back)
-	la $t4, final_tile
-	sw $s0, 0($t4)
-	sw $s1, 4($t4)
+# halt_for_growth:
+# 	# prepare to travel back to the beginning
+# 	# of the round in order to harvest the plants
+# 	# (store the current position globally and move back)
+# 	la $t4, final_tile
+# 	sw $s0, 0($t4)
+# 	sw $s1, 4($t4)
 
-    li $a0, 9
-    li $a1, 9
-    li $a2, 10
-    li $a3, 0 				# 0 means move via tile
-    jal move_to
+#     li $a0, 9
+#     li $a1, 9
+#     li $a2, 10
+#     li $a3, 0 				# 0 means move via tile
+#     jal move_to
 
-    j harvest_or_plant
+#     j harvest_or_plant
 
-continue_harvest_or_plant:
-	# if we don't receive a MAX_GROWTH interrupt, we need to
-	# go back to the current position
-	move $a0, $s0
-	move $a1, $s1
+# continue_harvest_or_plant:
+# 	# if we don't receive a MAX_GROWTH interrupt, we need to
+# 	# go back to the current position
+# 	move $a0, $s0
+# 	move $a1, $s1
+# 	li $a2, 10
+# 	li $a3, 0				# 0 means move via tile
+# 	jal move_to
+
+# 	sub $s1, $s1, 1
+#     j harvest_or_plant
+
+# skip_to_next_line:
+# 	sub $s0, $s0, 1
+# 	li $s1, 9
+
+# 	j harvest_or_plant
+
+################################################4*4
+	# li $a0, 9
+	# li $a1, 9
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 9
+	# li $a1, 7
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+
+	# li $a0, 6
+	# li $a1, 8
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 6
+	# li $a1, 6
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+	# li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 7
+	# li $a1, 9
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+
+	# li $a0, 8
+	# li $a1, 6
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+	# li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 9
+	# li $a1, 8
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 7
+	# li $a1, 7
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 6
+	# li $a1, 9
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 8
+	# li $a1, 8
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+
+	# li $a0, 9
+	# li $a1, 6
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+	# li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 7
+	# li $a1, 6
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 6
+	# li $a1, 7
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+	# li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 8
+	# li $a1, 7
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 8
+	# li $a1, 9
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+
+
+	# li $a0, 7
+	# li $a1, 8
+	# li $a2, 10
+	# li $a3, 0				# 0 means move via tile
+	# jal move_to
+	# li $t4, 1
+	# sw $t4, HARVEST_TILE
+ # 	li $t4, 1		
+	# sw $t4, SEED_TILE
+	# sw $t9, WATER_TILE
+################################################4*4
+
+################################################3*3
+	li $a0, 9
+	li $a1, 9
 	li $a2, 10
 	li $a3, 0				# 0 means move via tile
 	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 7
+	li $a1, 8
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 9
+	li $a1, 7
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 8
+	li $a1, 9
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 7
+	li $a1, 7
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 9
+	li $a1, 8
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 7
+	li $a1, 9
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+	
+	li $a0, 8
+	li $a1, 7
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
 
-	sub $s1, $s1, 1
-    j harvest_or_plant
-
-skip_to_next_line:
-	sub $s0, $s0, 1
-	li $s1, 9
-
-	j harvest_or_plant
+	li $a0, 8
+	li $a1, 8
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+################################################3*3
 
 skip_to_next_round:
 	j action
