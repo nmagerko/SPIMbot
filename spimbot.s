@@ -54,8 +54,8 @@ solution_data: .space 328;
 puzzle1_data: .space 4096;
 puzzle2_data: .space 4096;
 #This will alternate between puzzle1 and puzzle2.
-next_puzzle_pointer: .word 0x0000;
-current_puzzle_pointer: .word 0x0000;
+next_puzzle_pointer: .word 0;
+current_puzzle_pointer: .word 0;
 #How many puzzles are unsolved
 num_puzzles: .byte 0x0000;
 current_puzzle_is_ready: .byte 0x0000;
@@ -63,73 +63,111 @@ next_puzzle_is_ready: .byte 0x0000;
 
 .text
 
-#####################
-# Interrupt code	#
-#####################
-
 main:
-
+	
 	li $t0, REQUEST_PUZZLE_INT_MASK
 	ori $t0, $t0, 1
 	mtc0 $t0, $12		#enable interrupts
 
-	j main
+	jal initialize_puzzle_pointers
+
+	li $t0 1
+	sw $t0 VELOCITY
+	
+
+loop:
+
+	jal can_request_puzzle
+
+	beq $v0 $0 check_ready
+	jal request_fire
+
+check_ready:
+	la $t0, current_puzzle_is_ready
+	lb $t0, 0($t0)
+
+	# While the puzzle isn't ready
+	beq $t0, $0, loop
+	jal solve_puzzle
+	jal submit_puzzle
+
+	sw $0 BURN_TILE
+	j loop
+
+
+infinite:
+	j infinite
+	
 
 #####################
 # Main program code	#
 #####################
 
 request_water:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
 
 	li $t0, 0  # 0 for water, 1 for seeds, 2 for fire starters
 	sw $t0, SET_RESOURCE_TYPE
 
 	jal request_puzzle
+	
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
 
 	jr $ra
 
 request_seeds:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
 
 	li $t0, 1 # 0 for water, 1 for seeds, 2 for fire starters
 	sw $t0, SET_RESOURCE_TYPE
 
 	jal request_puzzle
+	
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
 
 	jr $ra
 
 request_fire:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
 
 	li $t0, 2  # 0 for water, 1 for seeds, 2 for fire starters
 	sw $t0, SET_RESOURCE_TYPE
 
 	jal request_puzzle
+	
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
 
 	jr $ra
 
 request_puzzle:
-	la $t1, num_puzzles
-	lw $t1 0($t1)
+
+	la $t0, num_puzzles
+	lb $t1, 0($t0)
 
 	beq $t1, 0, request_puzzle_send_current
 	# If there are not zero (one) outstanding puzzles, fill the next puzzle
-		la $t1, next_puzzle_pointer
-		lw $t1, 0($t1)
-		sw $t1, REQUEST_PUZZLE
+		la $t2, next_puzzle_pointer
+		lw $t2, 0($t2)
+		sw $t2, REQUEST_PUZZLE
 		j request_puzzle_finish
 
 	# If there are zero outstanding puzzles, fill the current puzzle
 	request_puzzle_send_current:
-		la $t1, current_puzzle_pointer
-		lw $t1, 0($t1)
-		sw $t1, REQUEST_PUZZLE
+		la $t2, current_puzzle_pointer
+		lw $t2, 0($t2)
+		sw $t2, REQUEST_PUZZLE
 		#fall through to finish
 
 	request_puzzle_finish:
 		# Increment num_puzzles (outstanding puzzles)
-		la $t0, num_puzzles
-		lw $t1, 0($t0)
 		addi $t1, 1
-		sw $t1, 0($t0)
+		sb $t1, 0($t0)
 
 		jr $ra
 
@@ -153,7 +191,7 @@ swap_puzzles:
 
 	# Get the next puzzle_pointer
 	la $t2	next_puzzle_pointer
-	lw $t3, 0($t1)
+	lw $t3, 0($t2)
 
 	#Swap 'em
 	sw $t1, 0($t2)
@@ -161,50 +199,76 @@ swap_puzzles:
 
 	# Get the current puzzle ready bool
 	la $t0	current_puzzle_is_ready
-	lw $t1, 0($t0)
+	lb $t1, 0($t0)
 
 	# Get the next puzzle ready bool
 	la $t2	next_puzzle_is_ready
-	lw $t3, 0($t1)
+	lb $t3, 0($t2)
 
 	#Swap 'em
-	sw $t1, 0($t2)
-	sw $t3, 0($t0)
+	sb $t1, 0($t2)
+	sb $t3, 0($t0)
 
 	jr $ra
 
 submit_puzzle:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
+
 	la $t0, solution_data
 	sw $t0, SUBMIT_SOLUTION
 
 	# Decrement num_puzzles
 	la $t0, num_puzzles
-	lw $t1, 0($t0)
+	lb $t1, 0($t0)
 	addi $t1, -1
-	sw $t1, 0($t0)
+	sb $t1, 0($t0)
 
 	# Reset ready bool
 	la $t0, current_puzzle_is_ready
-	sw $0, 0($t0)
+	sb $0, 0($t0)
+
+	# Clear the solution
+	jal clear_solution
 
 	# Move on to next puzzle
 	jal swap_puzzles
+	
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
 
 	jr $ra
 
+clear_solution:
+	move $t0, $0
+	la $t1, solution_data 
+
+	clear_solution_loop:
+		beq $t0, 328, clear_solution_finish
+		add $t2, $t1, $t0
+		sw $0, 0($t2)
+		addi $t0, 4
+		j clear_solution_loop
+
+	clear_solution_finish:
+		jr $ra
+
 can_solve_puzzle:
 	la $t0, current_puzzle_is_ready
-	lw $v0, 0($t0)
+	lb $v0, 0($t0)
 	jr $ra
 
 can_request_puzzle:
 	la $t0, num_puzzles
-	lw $t0, $t0
+	lb $t0, 0($t0)
 	# Set $v0 equal to bool expression (num_puzzles < 2)
 	slt $v0, $t0, 2
 	jr $ra
 
 solve_puzzle:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
+
 	#load solution address
 	la $a0 solution_data
 	#load current puzzle address
@@ -212,90 +276,11 @@ solve_puzzle:
 	lw $a1 0($t0)
 
 	jal recursive_backtracking
+	
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
 
 	jr $ra
-
-#fire interrupt
-
-.kdata
-	chunkIH: .space 24
-	non_intrpt_str:	.asciiz "Non-interrupt exception\n"
-	unhandled_str:	.asciiz "Unhandled interrupt type\n"
-
-.ktext 0x80000180
-interrupt_handler:
-.set noat
-	move $k1, $at
-.set at
-	la $k0, chunkIH
-	sw $t0, 0($k0)
-	sw $t1, 4($k0)
-	sw $t2, 8($k0)
-	sw $t3, 12($k0)
-	sw $a0, 16($k0)
-	sw $a1, 20($k0)
-
-	mfc0 $k0, $13
-	srl $a0, $k0, 2
-	and $a0, $a0, 0xf
-	bne $a0, 0, non_intrpt
-
-interrupt_dispatch:
-	mfc0 $k0, $13 										# Get Cause register, again
-	beq $k0, $0, done									# handled all outstanding interrupts
-
-	# Interrupt dispatches
-
-	and $a0, $k0, REQUEST_PUZZLE_INT_MASK				#is there a puzzle interrupt?
-	bne $a0, $0, puzzle_interrupt
-
-	# Unhandled interrupt types
-
-	li	$v0, PRINT_STRING
-	la	$a0, unhandled_str
-	syscall
-	j	done
-
-puzzle_interrupt:
-	sw $a1, REQUEST_PUZZLE_ACK							# acknowledge interrupt
-	la $t1, current_puzzle_is_ready
-	lw $t1, 0($t1)
-	li $t0, 1
-	# Branch if the current puzzle is already ready (being solved)
-	beq $t1, 1, puzzle_interrupt_next_puzzle_is_ready
-		# Set the current puzzle as ready
-		sw $t0, 0($t1)
-		j puzzle_interrupt_finish
-
-	puzzle_interrupt_next_puzzle_is_ready:
-		# Set the next puzzle as ready
-		la $t1, current_puzzle_is_ready
-		sw $t0, 0($t1)
-		#fall through to finish
-
-	puzzle_interrupt_finish:
-		j interrupt_dispatch
-
-non_intrpt:
-	li	$v0, PRINT_STRING
-	la	$a0, non_intrpt_str
-	syscall				# print out an error message
-	# fall through to done
-
-done:
-	la $k0, chunkIH
-	# Restore variables
-	lw $t0, 0($k0)
-	lw $t1, 4($k0)
-	lw $t2, 8($k0)
-	lw $t3, 12($k0)
-	lw $a0, 16($k0)
-	lw $a1, 20($k0)
-
-.set noat
-	move $at, $k1
-.set at
-	eret
 
 ##########################
 # BEGIN HELPER FUNCTIONS #
@@ -350,6 +335,12 @@ get_domain_for_addition:
     sub    $t0, $s1, 1                  # num_cell - 1
     mul    $t0, $t0, $v0                # (num_cell - 1) * lower_bound
     sub    $t0, $s0, $t0                # t0 = high_bits
+
+    bge	   $t0, $0, gdfa_continue
+    # Set high bits to zero if it's less than zero
+    move   $t0, $0    
+
+    gdfa_continue:
     bge    $t0, $s3, gdfa_skip1
 
     li     $t1, 1
@@ -759,3 +750,89 @@ is_complete:
   move	$v0, $0
   seq   $v0, $t0, $t1
   j     $ra
+
+
+
+#####################
+# Interrupt code    #
+#####################
+
+.kdata
+	chunkIH: .space 24
+	non_intrpt_str:	.asciiz "Non-interrupt exception\n"
+	unhandled_str:	.asciiz "Unhandled interrupt type\n"
+
+.ktext 0x80000180
+interrupt_handler:
+.set noat
+	move $k1, $at
+.set at
+	la $k0, chunkIH
+	sw $t0, 0($k0)
+	sw $t1, 4($k0)
+	sw $t2, 8($k0)
+	sw $t3, 12($k0)
+	sw $a0, 16($k0)
+	sw $a1, 20($k0)
+
+	mfc0 $k0, $13
+	srl $a0, $k0, 2
+	and $a0, $a0, 0xf
+	bne $a0, 0, non_intrpt
+
+interrupt_dispatch:
+	mfc0 $k0, $13 										# Get Cause register, again
+	beq $k0, $0, done									# handled all outstanding interrupts
+
+	# Interrupt dispatches
+
+	and $a0, $k0, REQUEST_PUZZLE_INT_MASK				#is there a puzzle interrupt?
+	bne $a0, $0, puzzle_interrupt
+
+	# Unhandled interrupt types
+
+	li	$v0, PRINT_STRING
+	la	$a0, unhandled_str
+	syscall
+	j	done
+
+puzzle_interrupt:
+	sw $a1, REQUEST_PUZZLE_ACK							# acknowledge interrupt
+	la $t0, current_puzzle_is_ready
+	lb $t1, 0($t0)
+	li $t2, 1
+	# Branch if the current puzzle is already ready (being solved)
+	beq $t1, 1, puzzle_interrupt_next_puzzle_is_ready
+		# Set the current puzzle as ready
+		sb $t2, 0($t0)
+		j puzzle_interrupt_finish
+
+	puzzle_interrupt_next_puzzle_is_ready:
+		# Set the next puzzle as ready
+		la $t0, next_puzzle_is_ready
+		sb $t2, 0($t0)
+		#fall through to finish
+
+	puzzle_interrupt_finish:
+		j interrupt_dispatch
+
+non_intrpt:
+	li	$v0, PRINT_STRING
+	la	$a0, non_intrpt_str
+	syscall				# print out an error message
+	# fall through to done
+
+done:
+	la $k0, chunkIH
+	# Restore variables
+	lw $t0, 0($k0)
+	lw $t1, 4($k0)
+	lw $t2, 8($k0)
+	lw $t3, 12($k0)
+	lw $a0, 16($k0)
+	lw $a1, 20($k0)
+
+.set noat
+	move $at, $k1
+.set at
+	eret
