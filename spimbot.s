@@ -74,7 +74,7 @@ main:
 	mtc0 $t0, $12		#enable interrupts
 
 	j main
-	
+
 #####################
 # Main program code	#
 #####################
@@ -145,7 +145,6 @@ initialize_puzzle_pointers:
 	sw $t1, 0($t0)
 
 	jr $ra
-
 
 swap_puzzles:
 	# Get the current puzzle_pointer
