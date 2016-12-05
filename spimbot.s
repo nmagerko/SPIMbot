@@ -106,6 +106,7 @@ next_puzzle_is_ready:
 
 
 .text
+
 main:
 	sw $0 , VELOCITY
 
