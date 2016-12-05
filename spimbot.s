@@ -299,6 +299,11 @@ euclidean_dist:
 	mfc1	$v0, $f0
 	jr	$ra
 
+
+# ----------------------------------------------
+# Makes a request for water, and by doing so,
+# requests a new puzzle to be solved
+# ----------------------------------------------
 request_water:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -313,6 +318,10 @@ request_water:
 
 	jr $ra
 
+# ----------------------------------------------
+# Makes a request for seeds, and by doing so,
+# requests a new puzzle to be solved
+# ----------------------------------------------
 request_seeds:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -327,6 +336,10 @@ request_seeds:
 
 	jr $ra
 
+# ----------------------------------------------
+# Makes a request for fire, and by doing so,
+# requests a new puzzle to be solved
+# ----------------------------------------------
 request_fire:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -341,6 +354,17 @@ request_fire:
 
 	jr $ra
 
+
+# ----------------------------------------------
+# Makes a request for a new puzzle, filling the
+# correct puzzle data struct while doing so.
+# This will also increment the number of out-
+# standing puzzles to be solved.
+#
+# Note: it is important to check 
+# 	can_request_puzzle before requesting
+#	a new puzzle
+# ----------------------------------------------
 request_puzzle:
 
 	la $t0, num_puzzles
@@ -367,6 +391,9 @@ request_puzzle:
 
 		jr $ra
 
+# ----------------------------------------------
+# Initalizes the pointers to the two puzzles
+# ----------------------------------------------
 initialize_puzzle_pointers:
 	# Set the current puzzle_pointer
 	la $t0, current_puzzle_pointer
@@ -380,6 +407,11 @@ initialize_puzzle_pointers:
 
 	jr $ra
 
+# ----------------------------------------------
+# Swaps the puzzle pointers and the two
+# booleans indicating whether the puzzles
+# are ready to be solved
+# ----------------------------------------------
 swap_puzzles:
 	# Get the current puzzle_pointer
 	la $t0	current_puzzle_pointer
@@ -407,6 +439,10 @@ swap_puzzles:
 
 	jr $ra
 
+# ----------------------------------------------
+# Submits the puzzle and decrements the number 
+# of outstanding puzzles to be solveds
+# ----------------------------------------------
 submit_puzzle:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -435,6 +471,10 @@ submit_puzzle:
 
 	jr $ra
 
+# ----------------------------------------------
+# Clears the solution data struct so it can be 
+# used for the next puzzle
+# ----------------------------------------------
 clear_solution:
 	move $t0, $0
 	la $t1, solution_data 
@@ -449,11 +489,22 @@ clear_solution:
 	clear_solution_finish:
 		jr $ra
 
+# ----------------------------------------------
+# Checks that the current puzzle is ready to be
+# solved
+#
+# returns the True (1) or False (0)
+# ----------------------------------------------
 can_solve_puzzle:
 	la $t0, current_puzzle_is_ready
 	lb $v0, 0($t0)
 	jr $ra
 
+# ----------------------------------------------
+# Checks whether a new puzzle can be requested
+#
+# returns the True (1) or False (0)
+# ----------------------------------------------
 can_request_puzzle:
 	la $t0, num_puzzles
 	lb $t0, 0($t0)
@@ -461,6 +512,10 @@ can_request_puzzle:
 	slt $v0, $t0, 2
 	jr $ra
 
+# ----------------------------------------------
+# Solves the current puzzle and fills the
+# solution
+# ----------------------------------------------
 solve_puzzle:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -531,15 +586,14 @@ get_domain_for_addition:
     sub    $t0, $s1, 1                  # num_cell - 1
     mul    $t0, $t0, $v0                # (num_cell - 1) * lower_bound
     sub    $t0, $s0, $t0                # t0 = high_bits
+    bge    $t0, 0, gdfa_skip0
 
-    bge	   $t0, $0, gdfa_continue
-    # Set high bits to zero if it's less than zero
-    move   $t0, $0    
+    li     $t0, 0
 
-    gdfa_continue:
+gdfa_skip0:
     bge    $t0, $s3, gdfa_skip1
 
-    li     $t1, 1
+    li     $t1, 1          
     sll    $t0, $t1, $t0                # 1 << high_bits
     sub    $t0, $t0, 1                  # (1 << high_bits) - 1
     and    $s2, $s2, $t0                # domain & ((1 << high_bits) - 1)
