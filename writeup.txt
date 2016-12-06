@@ -7,12 +7,12 @@ collection and a practical planting pattern, we expect that our bot will simulta
 effective in completing its tasks as well as be tolerant of sabatoge from other bots.
 
 The base planting pattern exists to maximize how many plants can be placed per unit time and
-how many plants can be harvested per unit time. Specifically, we choose four sets of four tiles
+how many plants can be harvested per unit time. Specifically, we choose nine sets of four tiles
 at runtime to be our planting surface (see Figure 1). We travel in such a way that we arrive
 at the middle of each set, and then can plant/water/harvest just by moving in the x- or y- 
 directions by a few pixels; we never travel to the center of any one tile, but rather towards
-the intersection of them all. We continuously move from one set to another in a clockwise fashion,
-collecting all available plants, then re-planting and watering.
+the intersection of them all. We continuously move from one set to another in a clockwise spiral 
+fashion, collecting all available plants, then re-planting and watering.
 
 The pattern is resilient to fires, as setting fires in any one of our sets will not affect plants 
 in any other sets. At the same time, we do attempt to put out fires when returning to a set in order
@@ -34,17 +34,23 @@ itself, as it permits us to touch all tiles in a set without having to move very
 
 Solo tests of this bot have yielded satisfactory results.
 
--------------------------------
-|  x  |  x  |     |  x  |  x  |
---------------->---------------
-|  x  |  x  |     |  x  |  x  |
--------------------------------
-|     ^     |     |     |     |
--------------------------------
-|  x  |  x  |     |  x  |  x  |
----------------<---------------
-|  x  |  x  |     |  x  |  x  |
--------------------------------
+-------------------------------------------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+--------------->----------------->---------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+-------------------------------------------------
+|     ^     |     |           |     |     v     |
+-------------------------------------------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+---------------------------------<---------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+-------------------------------------------------
+|     ^     |     |     |     |  ↘︎   |     |     |
+-------------------------------------------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+---------------<-----------------<---------------
+|  x  |  x  |     |  x  |  x  |     |  x  |  x  |
+-------------------------------------------------
 Figure 1. The planting pattern. 
 x's represents a possible seed 
 placement. Arrows represent 

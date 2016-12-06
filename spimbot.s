@@ -334,6 +334,10 @@ action:
 	li $a3, 1				# 4
 	jal move_to
 	li $t4, 1
+	la $t0, BOT_X
+	lw $t0, 0($t0)
+	la $t0, BOT_Y
+	lw $t1, 0($t0)
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
