@@ -47,19 +47,26 @@ MAX_GROWTH_INT_MASK     = 0x2000
 REQUEST_PUZZLE_ACK      = 0xffff00d8
 REQUEST_PUZZLE_INT_MASK = 0x800
 
+
 .data
-# Space for puzzle solutions
-solution_data: .space 328;
-# Space to hold two puzzles
-puzzle1_data: .space 4096;
-puzzle2_data: .space 4096;
-#This will alternate between puzzle1 and puzzle2.
-next_puzzle_pointer: .word 0;
-current_puzzle_pointer: .word 0;
-#How many puzzles are unsolved
-num_puzzles: .byte 0x0000;
-current_puzzle_is_ready: .byte 0x0000;
-next_puzzle_is_ready: .byte 0x0000;
+tile_data: 
+	.space 1600
+seeds: 
+	.word 10
+water:
+	.word 100
+puzzle_types:
+	.word 0, 0
+is_fire:
+	.word 0
+fire_location:
+	.word 0, 0
+max_growth_seen:
+	.word 0
+ripe_place:
+	.word 0, 0
+final_tile:
+	.word 0, 0
 
 # the current movement state structure
 # contents are [valid, world_x, world_y]
@@ -76,47 +83,442 @@ PI:
 F180:	
 		.float  180.0
 
+# Space for puzzle solutions
+solution_data: 
+	.space 328;
+# Space to hold two puzzles
+puzzle1_data: 
+	.space 4096;
+puzzle2_data: 
+	.space 4096;
+#This will alternate between puzzle1 and puzzle2.
+next_puzzle_pointer: 
+	.word 0;
+current_puzzle_pointer: 
+	.word 0;
+#How many puzzles are unsolved
+num_puzzles: 
+	.byte 0;
+current_puzzle_is_ready: 
+	.byte 0;
+next_puzzle_is_ready: 
+	.byte 0;
+
+
 .text
 
 main:
-	
-	li $t0, REQUEST_PUZZLE_INT_MASK
-	or $t0,	$t0, TIMER_MASK
-	ori $t0, $t0, 1
-	mtc0 $t0, $12		#enable interrupts
+	sw $0 , VELOCITY
+
+	sub $sp, $sp, 12
+	sw 	$ra, 0($sp)
+	sw 	$s0, 4($sp)
+	sw  $s1, 8($sp)
+
+	# enable all interrupts
+	li $t0, 1
+	ori $t0, $t0, TIMER_MASK
+	#ori $t0, $t0, MAX_GROWTH_INT_MASK
+	ori $t0, $t0, ON_FIRE_MASK
+	ori $t0, $t0, REQUEST_PUZZLE_INT_MASK
+	mtc0 $t0, $12
+
+	# prime the tile data
+	# (might remove later)
+	la $t0, tile_data
+	sw $t0, TILE_SCAN
 
 	jal initialize_puzzle_pointers
 
-	li $a0 2
-	li $a1 9
-	li $a2 1
-	jal move_to_tile
+	# after every loop, we move back to the
+	# start of the field; we use the tile form
+	li $a0, 9
+	li $a1, 9
+	li $a2, 10
+	li $a3, 0				# 0 means move via tile
+	jal move_to
+	j action
+
+
 	
 
-loop:
 
-	jal can_request_puzzle
+### step one ###
+move_to:
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
 
-	beq $v0 $0 check_ready
-	jal request_fire
+	# set the bot in motion and then start trying
+	# to collect resources !! fall through !!
+	bne $a3, 0, move_via_pixel
 
-check_ready:
-	la $t0, current_puzzle_is_ready
-	lb $t0, 0($t0)
+move_via_tile:
+	jal move_to_tile
+	j resource_collection_loop
+move_via_pixel:
+	jal move_to_pixel
 
-	# While the puzzle isn't ready
-	beq $t0, $0, loop
-	jal solve_puzzle
+resource_collection_loop:
+	# we will only harvest as long as we are moving
+	la $t0, move_state
+    lw $t0, 0($t0)
+    beq $t0, $0, move_end
+
+    # we try to request a puzzle, or we start solving
+    # the ones we have immediately
+    jal can_request_puzzle
+   	beq $v0, $0, start_solving_puzzles
+	
+
+   	# otherwise we decide which type of request
+   	# we want to make
+	la $t1, seeds
+    lw $t1, 0($t1)
+    la $t2, water
+    lw $t2, 0($t2)
+    mul $t1, $t1, 4																	#change it to get less/more water
+
+    # when the water is greater than the seeds, we'll
+    # try requesting seeds; else we !! fall through to water !!
+	bgt $t2, $t1, request_seed_puzzle
+
+request_water_puzzle:
+	jal request_water
+
+	li  $t2, 2
+	j   update_puzzle_type
+
+request_seed_puzzle:
+	jal request_seeds
+	li 	$t2, 1
+	j 	update_puzzle_type
+
+update_puzzle_type:
+	la 	$t0, puzzle_types
+	lw 	$t1, 0($t0)
+
+	# when the type in the first position is
+	# non-zero, the value in the second position must
+	# be zero (else can_request_puzzle would be false)
+	# !! note the fall-through !!
+	beq $t1, $0, update_puzzle_type_first_position
+
+update_puzzle_type_second_position:
+	sw 	$t2, 4($t0)
+	j 	start_solving_puzzles
+
+update_puzzle_type_first_position:
+	sw 	$t2, 0($t0)
+
+start_solving_puzzles:
+	# try to solve the puzzles, or start it all over again
+	jal can_solve_puzzle
+	beq $v0, $0, resource_collection_loop
+
+	jal solve_puzzle 
 	jal submit_puzzle
 
-	sw $0 SEED_TILE
-	sw $0 BURN_TILE
-	j loop
+	# the most recently solved puzzle is always associated
+	# with the first position (see role_over_puzzle_type below)
+	la $t0, puzzle_types
+	lw $t1, 0($t0)
+
+	# when the type is 1, we are updating seeds; otherwise
+	# we !! fall-through to update water !!
+	beq $t1, 1, update_seeds
+
+update_water:
+	# each update of water adds ten droplets
+	la $t2, water
+	lw $t3, 0($t2)
+	add $t3, $t3, 10
+	sw 	$t3, 0($t2)
+	j 	roll_over_puzzle_type
+
+update_seeds:
+	# each update of seeds adds three seeds
+	la $t2, seeds
+	lw $t3, 0($t2)
+	add $t3, $t3, 3
+	sw 	$t3, 0($t2)
+
+roll_over_puzzle_type:
+	# again, we always want the first position of
+	# the types to be associated with the next available
+	# puzzle (if it exists)
+	lw $t2, 4($t0)
+	sw $t2, 0($t0)
+
+	# we want to keep collecting resources, if possible
+	j 	resource_collection_loop
+
+move_end:
+	# we stopped moving, so we're done for now
+	lw  $ra, 0($sp)
+	add $sp, $sp, 4
+	jr 	$ra
 
 
-infinite:
-	j infinite
+
+### step two ###
+action:
+# 	# keep track of our bot
+	# this is the amount of water
+	li $t9, 6															#modify this to put more water
+
 	
+################################################4*4
+	li $a0, 271
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 271
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+
+	li $a0, 268
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 268
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 181
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+
+	li $a0, 178
+	li $a1, 271
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 178
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 181
+	li $a1, 268
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 181
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 178
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+
+	li $a0, 178
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 181
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 268
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 271
+	li $a1, 178
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 271
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+	li $a0, 268
+	li $a1, 181
+	li $a2, 10
+	li $a3, 1				# 0 means move via tile
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+ 	li $t4, 1		
+	sw $t4, SEED_TILE
+	sw $t9, WATER_TILE
+
+
+skip_to_next_round:
+	j action
+
+
+###handle_fire###
+seek_for_fire:
+
+	sub $sp, $sp, 4
+	sw $ra, 0($sp)
+
+	la $t0, is_fire
+	lw $t0, 0($t0)
+	beq $t0, $0, no_fire
+
+	la    $t0, fire_location
+	lw    $t1, 0($t0)
+	srl   $a0, $t1, 16
+	sll   $t2, $a0, 16
+	sub   $a1, $t1, $t2
+	li $a2, 10
+	li $a3, 0
+	jal move_to
+	sw $0, PUT_OUT_FIRE	
+
+	la $t0, is_fire
+	sw $0, 0($t0)
+
+no_fire:
+	lw $ra, 0($sp)
+	add $sp, $sp, 4
+
+	jr $ra
 
 #####################
 # Main program code #
@@ -299,11 +701,6 @@ euclidean_dist:
 	mfc1	$v0, $f0
 	jr	$ra
 
-
-# ----------------------------------------------
-# Makes a request for water, and by doing so,
-# requests a new puzzle to be solved
-# ----------------------------------------------
 request_water:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -318,10 +715,6 @@ request_water:
 
 	jr $ra
 
-# ----------------------------------------------
-# Makes a request for seeds, and by doing so,
-# requests a new puzzle to be solved
-# ----------------------------------------------
 request_seeds:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -336,10 +729,6 @@ request_seeds:
 
 	jr $ra
 
-# ----------------------------------------------
-# Makes a request for fire, and by doing so,
-# requests a new puzzle to be solved
-# ----------------------------------------------
 request_fire:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -354,17 +743,6 @@ request_fire:
 
 	jr $ra
 
-
-# ----------------------------------------------
-# Makes a request for a new puzzle, filling the
-# correct puzzle data struct while doing so.
-# This will also increment the number of out-
-# standing puzzles to be solved.
-#
-# Note: it is important to check 
-# 	can_request_puzzle before requesting
-#	a new puzzle
-# ----------------------------------------------
 request_puzzle:
 
 	la $t0, num_puzzles
@@ -391,9 +769,6 @@ request_puzzle:
 
 		jr $ra
 
-# ----------------------------------------------
-# Initalizes the pointers to the two puzzles
-# ----------------------------------------------
 initialize_puzzle_pointers:
 	# Set the current puzzle_pointer
 	la $t0, current_puzzle_pointer
@@ -407,11 +782,6 @@ initialize_puzzle_pointers:
 
 	jr $ra
 
-# ----------------------------------------------
-# Swaps the puzzle pointers and the two
-# booleans indicating whether the puzzles
-# are ready to be solved
-# ----------------------------------------------
 swap_puzzles:
 	# Get the current puzzle_pointer
 	la $t0	current_puzzle_pointer
@@ -439,10 +809,6 @@ swap_puzzles:
 
 	jr $ra
 
-# ----------------------------------------------
-# Submits the puzzle and decrements the number 
-# of outstanding puzzles to be solveds
-# ----------------------------------------------
 submit_puzzle:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -471,10 +837,6 @@ submit_puzzle:
 
 	jr $ra
 
-# ----------------------------------------------
-# Clears the solution data struct so it can be 
-# used for the next puzzle
-# ----------------------------------------------
 clear_solution:
 	move $t0, $0
 	la $t1, solution_data 
@@ -489,22 +851,11 @@ clear_solution:
 	clear_solution_finish:
 		jr $ra
 
-# ----------------------------------------------
-# Checks that the current puzzle is ready to be
-# solved
-#
-# returns the True (1) or False (0)
-# ----------------------------------------------
 can_solve_puzzle:
 	la $t0, current_puzzle_is_ready
 	lb $v0, 0($t0)
 	jr $ra
 
-# ----------------------------------------------
-# Checks whether a new puzzle can be requested
-#
-# returns the True (1) or False (0)
-# ----------------------------------------------
 can_request_puzzle:
 	la $t0, num_puzzles
 	lb $t0, 0($t0)
@@ -512,10 +863,6 @@ can_request_puzzle:
 	slt $v0, $t0, 2
 	jr $ra
 
-# ----------------------------------------------
-# Solves the current puzzle and fills the
-# solution
-# ----------------------------------------------
 solve_puzzle:
 	sub $sp, $sp, 4
 	sw $ra, 0($sp)
@@ -586,14 +933,15 @@ get_domain_for_addition:
     sub    $t0, $s1, 1                  # num_cell - 1
     mul    $t0, $t0, $v0                # (num_cell - 1) * lower_bound
     sub    $t0, $s0, $t0                # t0 = high_bits
-    bge    $t0, 0, gdfa_skip0
 
-    li     $t0, 0
+    bge	   $t0, $0, gdfa_continue
+    # Set high bits to zero if it's less than zero
+    move   $t0, $0    
 
-gdfa_skip0:
+    gdfa_continue:
     bge    $t0, $s3, gdfa_skip1
 
-    li     $t1, 1          
+    li     $t1, 1
     sll    $t0, $t1, $t0                # 1 << high_bits
     sub    $t0, $t0, 1                  # (1 << high_bits) - 1
     and    $s2, $s2, $t0                # domain & ((1 << high_bits) - 1)
@@ -1038,6 +1386,8 @@ interrupt_dispatch:
 	and	$a0, $k0, TIMER_MASK	                # is there a timer interrupt?
 	bne	$a0, 0, timer_interrupt
 
+    	and   $a0, $k0, ON_FIRE_MASK                 # is there something on fire that we'll handle?
+    	bne   $a0, 0, fire_interrupt
 
 	and $a0, $k0, REQUEST_PUZZLE_INT_MASK		#is there a puzzle interrupt?
 	bne $a0, $0, puzzle_interrupt
@@ -1069,6 +1419,19 @@ timer_interrupt:
 
 	timer_interrupt_done:
 		j	interrupt_dispatch		# see if other interrupts are waiting
+
+fire_interrupt:
+	sw    $k0, ON_FIRE_ACK                       # acknowledge fire interrupt
+    
+    	lw    $t0, GET_FIRE_LOC                      # retrieve fire location and store
+    	la    $t1, fire_location
+    	sw    $t0, 0($t1)
+
+    	la    $t0, is_fire
+    	li    $t1, 1
+    	sw    $t1, 0($t0)
+
+    	j	  interrupt_dispatch	                 # see if other interrupts are waiting 
 
 puzzle_interrupt:
 	sw $a1, REQUEST_PUZZLE_ACK			# acknowledge interrupt
@@ -1110,3 +1473,5 @@ done:
 	move $at, $k1
 .set at
 	eret
+
+
