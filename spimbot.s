@@ -178,7 +178,7 @@ resource_collection_loop:
     lw $t1, 0($t1)
     la $t2, water
     lw $t2, 0($t2)
-    mul $t1, $t1, 5					#change it to get less/more water
+    mul $t1, $t1, 4					#change it to get less/more water
 
     # when the water is greater than the seeds, we'll
     # try requesting seeds; else we !! fall through to water !!
@@ -268,15 +268,15 @@ move_end:
 action:
 # 	# keep track of our bot
 	# this is the amount of water
-	li $s0, 6				#modify this to put more water
-	li $s1, 7				# velocity
+	li $s0, 4				#modify this to put more water
+	li $s1, 9				# velocity
 
 	
 ################################################4*4
-	li $a0, 271
-	li $a1, 271
+	li $a0, 272
+	li $a1, 272
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 1
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -289,7 +289,7 @@ action:
 	li $a0, 271
 	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 2
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -303,7 +303,7 @@ action:
 	li $a0, 268
 	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 3
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -316,7 +316,7 @@ action:
 	li $a0, 268
 	li $a1, 271
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 4
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -326,10 +326,105 @@ action:
 
 
 
+	li $a0, 178
+	li $a1, 178
+	move $a2, $s1
+	li $a3, 1				# 17
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 178
+	li $a1, 181
+	move $a2, $s1
+	li $a3, 1				# 18
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 181
+	li $a1, 181
+	move $a2, $s1
+	li $a3, 1				# 19
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 181
+	li $a1, 178
+	move $a2, $s1
+	li $a3, 1				# 20
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+	li $a0, 91
+	li $a1, 181
+	move $a2, $s1
+	li $a3, 1				# 13
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 88
+	li $a1, 181
+	move $a2, $s1
+	li $a3, 1				# 14
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 88
+	li $a1, 178
+	move $a2, $s1
+	li $a3, 1				# 15
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 91
+	li $a1, 178
+	move $a2, $s1
+	li $a3, 1				# 16
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
 	li $a0, 181
 	li $a1, 271
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 5
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -340,10 +435,10 @@ action:
 
 
 
-	li $a0, 178
-	li $a1, 271
+	li $a0, 181
+	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 6
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -356,7 +451,7 @@ action:
 	li $a0, 178
 	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 7
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -366,23 +461,47 @@ action:
 
 
 
-	li $a0, 181
+	li $a0, 178
+	li $a1, 271
+	move $a2, $s1
+	li $a3, 1				# 8
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 91
+	li $a1, 271
+	move $a2, $s1
+	li $a3, 1				# 9
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 88
+	li $a1, 271
+	move $a2, $s1
+	li $a3, 1				# 10
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
+	li $a0, 88
 	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-
-	li $a0, 181
-	li $a1, 181
-	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 11
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -391,10 +510,10 @@ action:
 	sw $s0, WATER_TILE
 
 
-	li $a0, 178
-	li $a1, 181
+	li $a0, 91
+	li $a1, 268
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 12
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -403,35 +522,12 @@ action:
 	sw $s0, WATER_TILE
 
 
-
-	li $a0, 178
-	li $a1, 178
-	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 181
-	li $a1, 178
-	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
 
 
 	li $a0, 268
 	li $a1, 178
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 21
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -443,11 +539,11 @@ action:
 	li $a0, 271
 	li $a1, 178
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 22
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE	
+	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
 	sw $s0, WATER_TILE
 
@@ -455,11 +551,11 @@ action:
 	li $a0, 271
 	li $a1, 181
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 23
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE	
+	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
 	sw $s0, WATER_TILE
 
@@ -467,13 +563,14 @@ action:
 	li $a0, 268
 	li $a1, 181
 	move $a2, $s1
-	li $a3, 1				# 0 means move via tile
+	li $a3, 1				# 24
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
 	sw $s0, WATER_TILE
+
 
 
 skip_to_next_round:
@@ -1410,6 +1507,7 @@ timer_interrupt:
 		j	interrupt_dispatch		# see if other interrupts are waiting
 
 fire_interrupt:
+
 	sw    $k0, ON_FIRE_ACK                       # acknowledge fire interrupt
     
     	lw    $t0, GET_FIRE_LOC                      # retrieve fire location and store
@@ -1462,5 +1560,9 @@ done:
 	move $at, $k1
 .set at
 	eret
+
+
+
+
 
 
