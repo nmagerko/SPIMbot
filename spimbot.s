@@ -111,8 +111,8 @@ main:
 	sw $0 , VELOCITY
 
 	sub $sp, $sp, 12
-	sw 	$ra, 0($sp)
-	sw 	$s0, 4($sp)
+	sw  $ra, 0($sp)
+	sw  $s0, 4($sp)
 	sw  $s1, 8($sp)
 
 	# enable all interrupts
@@ -145,8 +145,10 @@ main:
 
 ### step one ###
 move_to:
-	sub $sp, $sp, 4
+	sub $sp, $sp, 12
 	sw $ra, 0($sp)
+	sw $s0, 4($sp)
+	sw $s1, 8($sp)
 
 	# set the bot in motion and then start trying
 	# to collect resources !! fall through !!
@@ -176,7 +178,7 @@ resource_collection_loop:
     lw $t1, 0($t1)
     la $t2, water
     lw $t2, 0($t2)
-    mul $t1, $t1, 4																	#change it to get less/more water
+    mul $t1, $t1, 5					#change it to get less/more water
 
     # when the water is greater than the seeds, we'll
     # try requesting seeds; else we !! fall through to water !!
@@ -255,7 +257,9 @@ roll_over_puzzle_type:
 move_end:
 	# we stopped moving, so we're done for now
 	lw  $ra, 0($sp)
-	add $sp, $sp, 4
+	lw $s0, 4($sp)
+	lw $s1, 8($sp)
+	add $sp, $sp, 12
 	jr 	$ra
 
 
@@ -264,227 +268,212 @@ move_end:
 action:
 # 	# keep track of our bot
 	# this is the amount of water
-	li $t9, 6															#modify this to put more water
+	li $s0, 6				#modify this to put more water
+	li $s1, 7				# velocity
 
 	
 ################################################4*4
 	li $a0, 271
 	li $a1, 271
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 271
 	li $a1, 268
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 
 	li $a0, 268
 	li $a1, 268
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
+	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 268
 	li $a1, 271
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	li $t4, 1		
+	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 181
 	li $a1, 271
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 
 	li $a0, 178
 	li $a1, 271
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
-	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 178
 	li $a1, 268
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 181
 	li $a1, 268
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 181
 	li $a1, 181
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
+	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 178
 	li $a1, 181
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 
 	li $a0, 178
 	li $a1, 178
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
-	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 181
 	li $a1, 178
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 268
 	li $a1, 178
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
-	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 271
 	li $a1, 178
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
+	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 271
 	li $a1, 181
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
- 	li $t4, 1		
+	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 	li $a0, 268
 	li $a1, 181
-	li $a2, 10
+	move $a2, $s1
 	li $a3, 1				# 0 means move via tile
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
- 	li $t4, 1		
 	sw $t4, SEED_TILE
-	sw $t9, WATER_TILE
+	sw $s0, WATER_TILE
 
 
 skip_to_next_round:
