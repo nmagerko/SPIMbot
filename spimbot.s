@@ -8,7 +8,7 @@ PRINT_INT_ADDR   = 0xffff0080
 PRINT_FLOAT_ADDR = 0xffff0084
 PRINT_HEX_ADDR   = 0xffff0089
 
-# spimbot constants
+# spimbot constantsa
 VELOCITY       = 0xffff0010
 ANGLE          = 0xffff0014
 ANGLE_CONTROL  = 0xffff0018
@@ -273,6 +273,14 @@ action:
 
 	
 ################################################4*4
+
+
+	li $a0, 270
+	li $a1, 270
+	move $a2, $s1
+	li $a3, 1				# 1
+	jal move_to
+
 	la $t0, BOT_X
 	lw $a0, 0($t0)
 	li $a1, 270
@@ -331,100 +339,6 @@ action:
 	sw $t4, SEED_TILE
 	sw $s0, WATER_TILE
 
-
-
-	li $a0, 179
-	li $a1, 179
-	move $a2, $s1
-	li $a3, 1				# 17
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 179
-	li $a1, 180
-	move $a2, $s1
-	li $a3, 1				# 18
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 180
-	li $a1, 180
-	move $a2, $s1
-	li $a3, 1				# 19
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE	
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 180
-	li $a1, 179
-	move $a2, $s1
-	li $a3, 1				# 20
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE	
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-	li $a0, 90
-	li $a1, 180
-	move $a2, $s1
-	li $a3, 1				# 13
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 89
-	li $a1, 180
-	move $a2, $s1
-	li $a3, 1				# 14
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 89
-	li $a1, 179
-	move $a2, $s1
-	li $a3, 1				# 15
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
-
-
-	li $a0, 90
-	li $a1, 179
-	move $a2, $s1
-	li $a3, 1				# 16
-	jal move_to
-	li $t4, 1
-	sw $t4, PUT_OUT_FIRE
-	sw $t4, HARVEST_TILE
-	sw $t4, SEED_TILE
-	sw $s0, WATER_TILE
 
 
 
@@ -529,10 +443,105 @@ action:
 	sw $s0, WATER_TILE
 
 
+	li $a0, 90
+	li $a1, 180
+	move $a2, $s1
+	li $a3, 1				# 13
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
 
 
-	li $a0, 269
+	li $a0, 89
+	li $a1, 180
+	move $a2, $s1
+	li $a3, 1				# 14
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 89
 	li $a1, 179
+	move $a2, $s1
+	li $a3, 1				# 15
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 90
+	li $a1, 179
+	move $a2, $s1
+	li $a3, 1				# 16
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
+	li $a0, 90
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 17
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 89
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 18
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 89
+	li $a1, 89
+	move $a2, $s1
+	li $a3, 1				# 19
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 90
+	li $a1, 89
+	move $a2, $s1
+	li $a3, 1				# 20
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE	
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 179
+	li $a1, 89
 	move $a2, $s1
 	li $a3, 1				# 21
 	jal move_to
@@ -543,10 +552,108 @@ action:
 	sw $s0, WATER_TILE
 
 
+	li $a0, 179
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 22
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 180
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 23
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 180
+	li $a1, 89
+	move $a2, $s1
+	li $a3, 1				# 24
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
+	li $a0, 269
+	li $a1, 89
+	move $a2, $s1
+	li $a3, 1				# 25
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
+	li $a0, 270
+	li $a1, 89
+	move $a2, $s1
+	li $a3, 1				# 26
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 270
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 27
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 269
+	li $a1, 90
+	move $a2, $s1
+	li $a3, 1				# 28
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 269
+	li $a1, 179
+	move $a2, $s1
+	li $a3, 1				# 29
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
 	li $a0, 270
 	li $a1, 179
 	move $a2, $s1
-	li $a3, 1				# 22
+	li $a3, 1				# 30
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -558,7 +665,7 @@ action:
 	li $a0, 270
 	li $a1, 180
 	move $a2, $s1
-	li $a3, 1				# 23
+	li $a3, 1				# 31
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -570,7 +677,7 @@ action:
 	li $a0, 269
 	li $a1, 180
 	move $a2, $s1
-	li $a3, 1				# 24
+	li $a3, 1				# 32
 	jal move_to
 	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
@@ -579,6 +686,54 @@ action:
 	sw $s0, WATER_TILE
 
 
+
+	li $a0, 180
+	li $a1, 180
+	move $a2, $s1
+	li $a3, 1				# 33
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+
+	li $a0, 179
+	li $a1, 180
+	move $a2, $s1
+	li $a3, 1				# 34
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 179
+	li $a1, 179
+	move $a2, $s1
+	li $a3, 1				# 35
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
+
+
+	li $a0, 180
+	li $a1, 179
+	move $a2, $s1
+	li $a3, 1				# 36
+	jal move_to
+	li $t4, 1
+	sw $t4, PUT_OUT_FIRE
+	sw $t4, HARVEST_TILE
+	sw $t4, SEED_TILE
+	sw $s0, WATER_TILE
 
 skip_to_next_round:
 	j action
