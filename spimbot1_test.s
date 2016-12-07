@@ -293,7 +293,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 1
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -306,7 +305,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 2
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -320,7 +318,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 3
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -333,7 +330,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 4
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -347,7 +343,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 5
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -361,7 +356,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 6
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -374,7 +368,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 7
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -387,7 +380,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 8
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -399,7 +391,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 9
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -411,7 +402,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 10
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -424,7 +414,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 11
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -436,7 +425,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 12
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -448,7 +436,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 13
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -460,7 +447,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 14
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -472,7 +458,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 15
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -484,7 +469,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 16
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -497,7 +481,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 17
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -509,7 +492,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 18
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -521,7 +503,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 19
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -533,7 +514,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 20
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -545,7 +525,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 21
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -557,7 +536,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 22
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -569,7 +547,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 23
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -581,7 +558,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 24
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -594,7 +570,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 25
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -607,7 +582,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 26
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -619,7 +593,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 27
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -631,7 +604,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 28
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -643,7 +615,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 29
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -655,7 +626,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 30
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -667,7 +637,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 31
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -679,7 +648,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 32
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -692,7 +660,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 33
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -705,7 +672,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 34
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -717,7 +683,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 35
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE
@@ -729,7 +694,6 @@ action:
 	move $a2, $s1
 	li $a3, 1				# 36
 	jal move_to
-	li $t4, 1
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE
 	sw $t4, SEED_TILE

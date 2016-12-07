@@ -1,3 +1,4 @@
+
 # syscall constants
 PRINT_STRING = 4
 PRINT_CHAR   = 11
@@ -6,9 +7,9 @@ PRINT_INT    = 1
 # debug constants
 PRINT_INT_ADDR   = 0xffff0080
 PRINT_FLOAT_ADDR = 0xffff0084
-PRINT_HEX_ADDR   = 0xffff0089
+PRINT_HEX_ADDR   = 0xffff0088
 
-# spimbot constantsa
+# spimbot constants
 VELOCITY       = 0xffff0010
 ANGLE          = 0xffff0014
 ANGLE_CONTROL  = 0xffff0018
@@ -334,6 +335,10 @@ action:
 	li $a3, 1				# 4
 	jal move_to
 	li $t4, 1
+	la $t0, BOT_X
+	lw $t0, 0($t0)
+	la $t0, BOT_Y
+	lw $t1, 0($t0)
 	sw $t4, PUT_OUT_FIRE
 	sw $t4, HARVEST_TILE	
 	sw $t4, SEED_TILE
@@ -1669,7 +1674,6 @@ timer_interrupt:
 		j	interrupt_dispatch		# see if other interrupts are waiting
 
 fire_interrupt:
-
 	sw    $k0, ON_FIRE_ACK                       # acknowledge fire interrupt
     
     	lw    $t0, GET_FIRE_LOC                      # retrieve fire location and store
@@ -1722,9 +1726,5 @@ done:
 	move $at, $k1
 .set at
 	eret
-
-
-
-
 
 
